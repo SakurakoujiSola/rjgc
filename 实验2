@@ -1,0 +1,175 @@
+#include <stdio.h> 
+#include <stdlib.h> 
+#include <string.h> 
+#include <stack> 
+ 
+//判断运算符的优先级函数 
+int Precede(char a, char b) 
+{ 
+   switch (a) 
+   { 
+     case '*': 
+     case '/': 
+        if ((b == '+') || (b == '-')) 
+        { 
+           return 1; //a的优先级高于b 
+        } 
+        else 
+        { 
+           return 0; //a的优先级等于b 
+        } 
+     
+	 case '+': 
+     case '-': 
+	    if ((b == '*') || (b == '/')) 
+	    { 
+	       return -1; //a的优先级低于b 
+        }
+	    else 
+		{ 
+		   return 0; 
+		} 
+   
+	default: 
+	     printf("运算符错误！\n"); 
+	     break; 
+	} 
+} 
+ 
+int Operate(int j, int k, char operater) 
+{ 
+	switch (operater) 
+	{ 
+		case '+': 
+			return k + j; 
+		//break;  
+		case '-': 
+			return k - j; 
+		//break; 
+		case '*': 
+			return k * j; 
+		//break;  
+		case '/':  
+			return k / j; 
+		//break;  
+		default: printf("运算错误！\n"); 
+		         break; 
+	} 
+} 
+ 
+ 
+int calculate(int len, char *expStr) 
+{ 
+	//表达式异常处理，注意len <= 0要加括号 
+	if ((len <= 0 ) || (expStr == NULL)) 
+	{ 
+		printf("表达式为空！\n"); 
+	} 
+	int i = 0, j = 0, k = 0; 
+	std::stack<int> date; 
+	std::stack<char> operate; 
+	while (i < len) 
+	{ 
+		if ((expStr[i] >= '0') && (expStr[i] <= '9')) 
+		{ 
+			date.push(expStr[i] - '0'); 
+			i++; 
+		} 
+		else if ((expStr[i] == '+') || (expStr[i] == '-') || expStr[i] == '*' || expStr[i] == '/') 
+		{ 
+			if (operate.empty()) 
+			{ 
+				operate.push(expStr[i]);
+				i++; 
+			} 
+			else 
+			{ 
+				//与栈顶运算符判断优先级 
+				switch (Precede(expStr[i], operate.top())) 
+				{ 
+				  case 0: 
+				  case -1: //栈顶运算符优先级高 
+					   j = date.top(); 
+					   date.pop(); 
+					   k = date.top(); 
+					   date.pop(); 
+					   date.push(Operate(j, k , operate.top()));
+					   operate.pop(); 
+					   //i++;  
+					   break; 
+ 
+				  case 1: //栈运算符顶优先级低 
+					   operate.push(expStr[i]); 
+					   i++; 
+					   break; 
+				  default: 
+					   printf("优先级判断错误！\n");
+					   break; 
+				 } 
+			} 
+		} 
+		else 
+		{ 
+			printf("表达式无法识别！\n");
+			break; 
+		}
+	} 
+	
+	while (!operate.empty()) 
+	{ 
+		j = date.top(); 
+		date.pop(); 
+		k = date.top(); 
+		date.pop(); 
+		date.push(Operate(j, k , operate.top())); 
+		operate.pop(); 
+	} 
+	
+	return date.top(); 
+} 
+ 
+//钱多
+int main() 
+{ 
+   int len = 0; int i= 0, input_flag = 0; 
+    
+   while (!input_flag) 
+   { 
+	  printf("请输入表达式的长度："); 
+	  input_flag = scanf("%d", &len); 
+	  if (!input_flag) 
+	  { 
+		printf("输入有误，仅可输入数字！\n"); 
+	  } 
+	  flushall(); 
+    } 
+	char *expStr = (char *)malloc(len * sizeof(char)); 
+	input_flag = 0;
+	
+	while (!input_flag) 
+	{ 
+		printf("请输入表达式："); 
+		for (i = 0; i < len; i++) 
+		{ 
+			input_flag = scanf("%c", &expStr[i]); 
+			//scanf("%c", &expStr[i]);  
+			/*
+			if ((i < len) && (expStr[i] == '\n')) 
+			{
+				printf("长度不够，请重新输入："); 
+				i = 0; 
+			}
+			*/ 
+			if (!input_flag) 
+			{ 
+				printf("表达式输入有误！\n"); 
+				flushall(); 
+				break; 
+			} 
+		 } 
+	 } 
+	
+	 printf("表达式的计算结果为：%d\n", calculate(len, expStr)); 
+	 
+  return 0; 
+}
